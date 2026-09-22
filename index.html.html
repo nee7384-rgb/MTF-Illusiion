@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Octave Illusion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10151c;
+    --surface: #1a222b;
+    --surface-2: #212b35;
+    --border: #2b3641;
+    --text: #edf1f4;
+    --text-muted: #8d98a3;
+    --high: #e8a33d;
+    --low: #4fb8a6;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: inherit; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1.25rem 3rem;
+  }
+  main { width: 100%; max-width: 560px; }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 5vw, 2.5rem);
+    line-height: 1.1;
+    margin: 0 0 0.6rem;
+  }
+  .lede {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 46ch;
+    margin: 0 0 1.6rem;
+  }
+  .warn {
+    background: var(--surface);
+    border: 1px solid var(--high);
+    border-left: 3px solid var(--high);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+  }
+  .ears {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .ear {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+  }
+  .ear-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.9rem;
+  }
+  .ear-dot {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 0.7rem;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .ear-dot.on-high { background: var(--high); transform: translateY(-6px) scale(1.08); }
+  .ear-dot.on-low { background: var(--low); transform: translateY(6px) scale(0.94); }
+  .ear-readout {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    min-height: 1.2em;
+  }
+  .ear-readout.revealed { color: var(--text); font-weight: 500; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+  }
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.7rem 1.3rem;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:focus-visible { outline: 2px solid var(--low); outline-offset: 2px; }
+  button.primary { background: var(--low); border-color: var(--low); color: #0c1a17; }
+  button.primary.playing { background: var(--high); border-color: var(--high); color: #241705; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  label.reveal {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    margin-bottom: 2rem;
+    cursor: pointer;
+  }
+  details {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  details p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-top: 0.8rem;
+  }
+  details cite { color: var(--text); font-style: normal; }
+  @media (prefers-reduced-motion: reduce) {
+    .ear-dot { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Octave Illusion</h1>
+  <p class="lede">Two tones, an octave apart, keep swapping ears four times a second. Almost nobody hears it that way.</p>
+  <div class="warn">Headphones required. Through speakers both ears hear the same mix, and the illusion needs each ear to receive something genuinely different.</div>
+
+  <div class="ears">
+    <div class="ear">
+      <div class="ear-label">Left ear</div>
+      <div class="ear-dot" id="dotL"></div>
+      <div class="ear-readout" id="readoutL">&nbsp;</div>
+    </div>
+    <div class="ear">
+      <div class="ear-label">Right ear</div>
+      <div class="ear-dot" id="dotR"></div>
+      <div class="ear-readout" id="readoutR">&nbsp;</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="playBtn">Play</button>
+    <button id="swapBtn">Swap ears</button>
+  </div>
+
+  <label class="reveal">
+    <input type="checkbox" id="revealBox">
+    Show what's actually playing in each ear
+  </label>
+
+  <details>
+    <summary>How it works</summary>
+    <p>Both ears receive the identical pattern: an 800&nbsp;Hz tone and a 400&nbsp;Hz tone, alternating four times a second. The catch is that when the left ear gets the high tone, the right ear gets the low one, and vice versa, so the two ears are always out of phase with each other. Most listeners don't hear two alternating pitches correctly. Instead they report one tone that seems to jump between ears while also changing pitch, and which ear it seems to jump to often tracks handedness rather than which channel is actually carrying the high tone. One ear's input appears to decide the pitch you perceive, and the other ear's input decides where you perceive it coming from, glued into a single percept that doesn't match either ear's actual signal. First reported in <cite>Deutsch, D. (1974). An auditory illusion. Nature, 251, 307&ndash;309.</cite></p>
+  </details>
+</main>
+
+<script>
+  const STEP_MS = 250;
+  const HIGH_FREQ = 800;
+  const LOW_FREQ = 400;
+  const RAMP = 0.02;
+
+  let ctx = null, oscHigh, oscLow, gHighL, gHighR, gLowL, gLowR, pannerL, pannerR;
+  let timer = null, step = 0, swapped = false, playing = false;
+
+  const playBtn = document.getElementById('playBtn');
+  const swapBtn = document.getElementById('swapBtn');
+  const revealBox = document.getElementById('revealBox');
+  const dotL = document.getElementById('dotL');
+  const dotR = document.getElementById('dotR');
+  const readoutL = document.getElementById('readoutL');
+  const readoutR = document.getElementById('readoutR');
+
+  function buildGraph() {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    oscHigh = ctx.createOscillator(); oscHigh.type = 'sine'; oscHigh.frequency.value = HIGH_FREQ;
+    oscLow = ctx.createOscillator(); oscLow.type = 'sine'; oscLow.frequency.value = LOW_FREQ;
+    gHighL = ctx.createGain(); gHighL.gain.value = 0;
+    gHighR = ctx.createGain(); gHighR.gain.value = 0;
+    gLowL = ctx.createGain(); gLowL.gain.value = 0;
+    gLowR = ctx.createGain(); gLowR.gain.value = 0;
+    pannerL = ctx.createStereoPanner(); pannerL.pan.value = -1;
+    pannerR = ctx.createStereoPanner(); pannerR.pan.value = 1;
+
+    oscHigh.connect(gHighL); oscHigh.connect(gHighR);
+    oscLow.connect(gLowL); oscLow.connect(gLowR);
+    gHighL.connect(pannerL); gLowL.connect(pannerL);
+    gHighR.connect(pannerR); gLowR.connect(pannerR);
+    pannerL.connect(ctx.destination); pannerR.connect(ctx.destination);
+
+    oscHigh.start(); oscLow.start();
+  }
+
+  function applyStep() {
+    const leftHigh = (step % 2 === 0) !== swapped;
+    const now = ctx.currentTime;
+    const ramp = (node, val) => node.gain.linearRampToValueAtTime(val, now + RAMP);
+    if (leftHigh) {
+      ramp(gHighL, 1); ramp(gLowL, 0); ramp(gHighR, 0); ramp(gLowR, 1);
+    } else {
+      ramp(gHighL, 0); ramp(gLowL, 1); ramp(gHighR, 1); ramp(gLowR, 0);
+    }
+    updateVisual(leftHigh);
+    step++;
+  }
+
+  function updateVisual(leftHigh) {
+    const revealed = revealBox.checked;
+    dotL.className = 'ear-dot' + (revealed ? (leftHigh ? ' on-high' : ' on-low') : '');
+    dotR.className = 'ear-dot' + (revealed ? (leftHigh ? ' on-low' : ' on-high') : '');
+    readoutL.textContent = revealed ? (leftHigh ? 'High (800 Hz)' : 'Low (400 Hz)') : '\u00A0';
+    readoutR.textContent = revealed ? (leftHigh ? 'Low (400 Hz)' : 'High (800 Hz)') : '\u00A0';
+    readoutL.classList.toggle('revealed', revealed);
+    readoutR.classList.toggle('revealed', revealed);
+  }
+
+  function start() {
+    if (!ctx) buildGraph();
+    step = 0;
+    applyStep();
+    timer = setInterval(applyStep, STEP_MS);
+    playing = true;
+    playBtn.textContent = 'Stop';
+    playBtn.classList.add('playing');
+  }
+
+  function stop() {
+    clearInterval(timer);
+    if (ctx) {
+      const now = ctx.currentTime;
+      [gHighL, gHighR, gLowL, gLowR].forEach(g => g.gain.linearRampToValueAtTime(0, now + RAMP));
+      setTimeout(() => { if (ctx) { ctx.close(); ctx = null; } }, 60);
+    }
+    playing = false;
+    playBtn.textContent = 'Play';
+    playBtn.classList.remove('playing');
+    dotL.className = 'ear-dot'; dotR.className = 'ear-dot';
+    readoutL.textContent = '\u00A0'; readoutR.textContent = '\u00A0';
+  }
+
+  playBtn.addEventListener('click', () => { playing ? stop() : start(); });
+  swapBtn.addEventListener('click', () => { swapped = !swapped; });
+</script>
+</body>
+</html>
